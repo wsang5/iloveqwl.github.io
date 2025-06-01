@@ -1,0 +1,405 @@
+body {
+    background-color: #f1d5da; /* 浅粉色 */
+    text-align: center;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 90%; /* 适应手机屏幕宽度 */
+    max-width: 500px; /* 最大宽度限制 */
+}
+
+#mainImage {
+    width: 100%; /* 图片宽度自适应容器 */
+    max-width: 800px; /* 最大宽度限制，再放大一倍 */
+    height: auto; /* 保持图片宽高比例 */
+    display: block; /* 块级显示 */
+    margin: 0 auto 20px; /* 上下左右外边距，底部增加20px间隔 */
+    transition: all 0.3s ease;
+}
+
+h1 {
+    font-size: 5vw; /* 字体大小根据视口宽度变化 */
+    color: #68495b;
+    margin: 20px 0; /* 增加上下间距 */
+}
+
+button {
+    font-size: 4vw; /* 字体大小根据视口宽度变化 */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s ease;
+}
+
+#yes {
+    background-color: #d4818e; /* 粉色 */
+    color: white;
+}
+
+#no {
+    background-color: #6784b1; /* 蓝色 */
+    color: white;
+    position: relative;
+}
+
+.heart-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    pointer-events: none;
+}
+
+.yes-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 218, 224, 0.7); /* 半透明粉色 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99;
+}
+
+.yes-text {
+    font-size: 7vw; /* 字体大小根据视口宽度变化 */
+}
+
+.yes-image {
+    width: 50%; /* 图片宽度自适应容器 */
+    max-width: 300px; /* 最大宽度限制 */
+}
+
+/* 电脑端样式优化 */
+@media (min-width: 768px) {
+    body {
+        display: block;
+    }
+
+    .container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: auto;
+        max-width: none;
+    }
+
+    #mainImage {
+        width: 800px; /* 固定图片宽度，再放大一倍 */
+        height: auto; /* 保持图片宽高比例 */
+        display: block;
+        margin: 0 auto 20px; /* 上下左右外边距，底部增加20px间隔 */
+    }
+
+    h1 {
+        font-size: 28px; /* 固定字体大小 */
+        margin: 20px 0;
+    }
+
+    button {
+        font-size: 18px; /* 固定字体大小 */
+    }
+
+    .yes-text {
+        font-size: 36px; /* 固定字体大小 */
+    }
+
+    .yes-image {
+        width: 300px; /* 固定图片宽度 */
+    }
+}
+
+/* 信封和情书样式 */
+.envelope-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    background-color: rgba(215, 240, 215, 0.7);
+}
+
+.envelope {
+    width: 500px;
+    height: 300px;
+    background-color: #ffafcc;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    transform: translateY(0);
+    transition: transform 0.5s ease-in-out;
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+/* 信封翻盖 - 改为X对角线设计 */
+.envelope-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffc8dd;
+    clip-path: polygon(0 0, 100% 0, 50% 50%);
+    z-index: 3;
+}
+
+.envelope-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffb7c5;
+    clip-path: polygon(0 100%, 100% 100%, 50% 50%);
+    z-index: 3;
+}
+
+.envelope-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffd1dc;
+    clip-path: polygon(0 0, 0 100%, 50% 50%);
+    z-index: 3;
+}
+
+.envelope-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffc1cc;
+    clip-path: polygon(100% 0, 100% 100%, 50% 50%);
+    z-index: 3;
+}
+
+/* 信封中心区域 */
+.envelope-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    transition: all 0.5s ease-in-out;
+}
+
+.envelope.open .envelope-center {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+}
+
+/* 信封底部 */
+.envelope-body {
+    width: 100%;
+    height: 100%;
+    background-color: #ffe0e6;
+    border-radius: 10px;
+    position: relative;
+    z-index: 2;
+}
+
+/* 打开按钮 */
+.open-button {
+    background-color: #a2d2ff;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    z-index: 15;
+    position: relative;
+}
+
+.open-button:hover {
+    background-color: #bde0fe;
+    transform: scale(1.05);
+}
+
+/* 信纸 */
+.letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%; /* 从固定宽度改为百分比宽度 */
+    max-width: 600px; /* 增加最大宽度 */
+    height: 70vh; /* 改为视口高度的百分比 */
+    background-color: #fff;
+    padding: 40px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    transform: translate(-50%, 300px); /* 初始位置在底部 */
+    transition: transform 0.8s ease-in-out, width 0.5s ease, height 0.5s ease;
+    z-index: 8;
+    overflow-y: auto;
+}
+
+.envelope.open .letter {
+    transform: translate(-50%, -50%) scale(1.2); /* 增加放大效果 */
+    z-index: 10; /* 提高层级确保显示在最上层 */
+}
+
+.letter-content {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    color: #ff85a2;
+    font-size: 28px; /* 增大字体 */
+    line-height: 1.8; /* 增加行高 */
+    text-align: center;
+}
+
+.letter-title {
+    font-size: 40px; /* 增大标题字体 */
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #ff5c8a;
+    text-align: center;
+}
+
+.letter-footer {
+    margin-top: 50px;
+    text-align: right;
+    font-style: italic;
+    color: #ff85a2;
+    font-size: 28px;
+}
+
+.envelope-container.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 彩色装饰 */
+.decoration {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ffafcc, #bde0fe);
+    opacity: 0.8;
+    animation: float 3s infinite ease-in-out;
+}
+
+.decoration:nth-child(1) {
+    top: 10%;
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.decoration:nth-child(2) {
+    top: 20%;
+    right: 15%;
+    animation-delay: 0.5s;
+}
+
+.decoration:nth-child(3) {
+    bottom: 15%;
+    left: 15%;
+    animation-delay: 1s;
+}
+
+.decoration:nth-child(4) {
+    bottom: 10%;
+    right: 20%;
+    animation-delay: 1.5s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(1.1);
+    }
+}
+
+/* 确保在小屏幕上也能正常显示 */
+@media (max-width: 768px) {
+    .envelope {
+        width: 90%;
+        max-width: 400px;
+        height: 250px;
+    }
+    
+    .envelope-center {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .letter {
+        width: 90%;
+        max-width: 500px;
+        height: 70vh;
+        padding: 30px;
+    }
+    
+    .envelope.open .letter {
+        transform: translate(-50%, -50%) scale(1.1); /* 在小屏幕上缩小放大比例 */
+    }
+    
+    .letter-content {
+        font-size: 24px;
+    }
+    
+    .letter-title {
+        font-size: 32px;
+    }
+
+    .open-button {
+        font-size: 18px;
+        padding: 12px 24px;
+    }
+}
+
+/* 信封打开后的背景变化 */
+.envelope.open ~ .decoration {
+    opacity: 0.5; /* 降低装饰球的不透明度 */
+}
+
+.envelope.open ~ .yes-screen {
+    background-color: rgba(215, 240, 215, 0.9); /* 调整背景色 */
+}
+
+/* 信纸打开时的特效 */
+.envelope.open .letter {
+    transform: translate(-50%, -50%) scale(1.2); /* 增加放大效果 */
+    z-index: 10; /* 提高层级确保显示在最上层 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* 增强阴影 */
+    background-color: rgba(255, 255, 255, 0.95); /* 增加信纸不透明度 */
+} 
