@@ -28,12 +28,68 @@ function playBackgroundMusic() {
   // 如果音乐已经在播放，不要重新开始
   if (bgMusic && bgMusic.paused) {
     bgMusic.volume = 0.5;
-    bgMusic.play().then(() => {
-      isMusicPlaying = true;
-      updateMusicButtonState();
-    }).catch(e => {
-      console.log('音频自动播放失败，可能需要用户交互:', e);
-    });
+    
+    // 添加用户交互检测
+    const playPromise = bgMusic.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        isMusicPlaying = true;
+        updateMusicButtonState();
+      }).catch(e => {
+        console.log('音频自动播放失败，可能需要用户交互:', e);
+        
+        // 添加一个一次性点击事件监听器来播放音频
+        const playOnInteraction = function() {
+          bgMusic.play()
+            .then(() => {
+              isMusicPlaying = true;
+              updateMusicButtonState();
+            })
+            .catch(err => console.log('即使在交互后播放失败:', err));
+          
+          // 移除事件监听器
+          document.removeEventListener('click', playOnInteraction);
+          document.removeEventListener('touchstart', playOnInteraction);
+        };
+        
+        // 添加事件监听器
+        document.addEventListener('click', playOnInteraction);
+        document.addEventListener('touchstart', playOnInteraction);
+        
+        // 显示提示
+        const audioPrompt = document.createElement('div');
+        audioPrompt.style.position = 'fixed';
+        audioPrompt.style.bottom = '20px';
+        audioPrompt.style.left = '50%';
+        audioPrompt.style.transform = 'translateX(-50%)';
+        audioPrompt.style.background = 'rgba(0,0,0,0.7)';
+        audioPrompt.style.color = 'white';
+        audioPrompt.style.padding = '10px 20px';
+        audioPrompt.style.borderRadius = '20px';
+        audioPrompt.style.fontSize = '14px';
+        audioPrompt.style.zIndex = '9999';
+        audioPrompt.textContent = '点击页面任意位置播放音乐';
+        audioPrompt.style.opacity = '0';
+        audioPrompt.style.transition = 'opacity 0.5s ease';
+        
+        document.body.appendChild(audioPrompt);
+        
+        // 淡入提示
+        setTimeout(() => {
+          audioPrompt.style.opacity = '1';
+          
+          // 5秒后淡出提示
+          setTimeout(() => {
+            audioPrompt.style.opacity = '0';
+            setTimeout(() => {
+              if (audioPrompt.parentNode) {
+                audioPrompt.parentNode.removeChild(audioPrompt);
+              }
+            }, 500);
+          }, 5000);
+        }, 100);
+      });
+    }
   }
 }
 
@@ -893,219 +949,25 @@ function showImageCollage() {
     }
   }
   
-  // 显示最终祝福信息
-  function showFinalMessage() {
-    // 创建祝福消息容器
-    const messageContainer = document.createElement('div');
-    messageContainer.style.position = 'fixed';
-    messageContainer.style.top = '50%';
-    messageContainer.style.left = '50%';
-    messageContainer.style.transform = 'translate(-50%, -50%) scale(0.1)';
-    messageContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-    messageContainer.style.padding = '30px 50px';
-    messageContainer.style.borderRadius = '20px';
-    messageContainer.style.boxShadow = '0 10px 40px rgba(255, 105, 180, 0.4)';
-    messageContainer.style.textAlign = 'center';
-    messageContainer.style.zIndex = '4000';
-    messageContainer.style.opacity = '0';
-    messageContainer.style.transition = 'all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-    
-    // 创建祝福文字
-    const message = document.createElement('div');
-    message.style.display = 'flex';
-    message.style.flexDirection = 'column';
-    message.style.alignItems = 'center';
-    message.style.justifyContent = 'center';
-    message.style.margin = '0';
-    message.style.padding = '10px 20px';
-    message.style.background = 'rgba(255, 255, 255, 0.2)';
-    message.style.borderRadius = '15px';
-    message.style.boxShadow = '0 8px 25px rgba(255, 105, 180, 0.3)';
-    
-    // 第一行文字
-    const firstLine = document.createElement('h2');
-    firstLine.textContent = '遇见你是我的幸运';
-    firstLine.style.color = '#ff6b8b';
-    firstLine.style.fontSize = '2em';
-    firstLine.style.fontWeight = 'bold';
-    firstLine.style.margin = '0 0 10px 0';
-    firstLine.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-    firstLine.style.background = 'linear-gradient(45deg, #ff6b8b, #ff8e9e)';
-    firstLine.style.webkitBackgroundClip = 'text';
-    firstLine.style.webkitTextFillColor = 'transparent';
-    
-    // 第二行文字
-    const secondLine = document.createElement('h2');
-    secondLine.textContent = '未来我们相片记录幸福到永远';
-    secondLine.style.color = '#7bba8e';
-    secondLine.style.fontSize = '1.8em';
-    secondLine.style.fontWeight = 'bold';
-    secondLine.style.margin = '0';
-    secondLine.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-    secondLine.style.background = 'linear-gradient(45deg,rgb(216, 59, 154),rgb(163, 57, 131))';
-    secondLine.style.webkitBackgroundClip = 'text';
-    secondLine.style.webkitTextFillColor = 'transparent';
-    
-    // 添加到消息容器
-    message.appendChild(firstLine);
-    message.appendChild(secondLine);
-    
-    // 添加装饰元素
-    const leftHeart = document.createElement('span');
-    leftHeart.textContent = '❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️';
-    leftHeart.style.fontSize = '1.5em';
-    leftHeart.style.marginRight = '15px';
-    leftHeart.style.display = 'inline-block';
-    leftHeart.style.animation = 'heartbeat 1.5s infinite';
-    
-    const rightHeart = document.createElement('span');
-    rightHeart.textContent = '❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️';
-    rightHeart.style.fontSize = '1.5em';
-    rightHeart.style.marginLeft = '15px';
-    rightHeart.style.display = 'inline-block';
-    rightHeart.style.animation = 'heartbeat 1.5s infinite';
-    
-    // 创建心跳动画
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = `
-      @keyframes heartbeat {
-        0% { transform: scale(1); }
-        25% { transform: scale(1.1); }
-        50% { transform: scale(1); }
-        75% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-      }
-      
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-      }
-    `;
-    document.head.appendChild(styleSheet);
-    
-    // 组装消息
-    messageContainer.appendChild(leftHeart);
-    messageContainer.appendChild(message);
-    messageContainer.appendChild(rightHeart);
-    document.body.appendChild(messageContainer);
-    
-    // 添加浮动动画
-    message.style.animation = 'float 3s ease-in-out infinite';
-    
-    // 显示消息
-    setTimeout(() => {
-      messageContainer.style.opacity = '1';
-      messageContainer.style.transform = 'translate(-50%, -50%) scale(1)';
-      
-      // 创建彩色粒子效果
-      createCelebrationParticles();
-      
-      // 10秒后淡出消息
-      setTimeout(() => {
-        messageContainer.style.opacity = '0';
-        messageContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
-        
-        // 移除消息元素
-        setTimeout(() => {
-          if (messageContainer.parentNode) {
-            messageContainer.parentNode.removeChild(messageContainer);
-          }
-        }, 1000);
-      }, 10000);
-    }, 100);
-  }
-  
-  // 创建庆祝粒子效果
-  function createCelebrationParticles() {
-    const particlesContainer = document.createElement('div');
-    particlesContainer.style.position = 'fixed';
-    particlesContainer.style.top = '0';
-    particlesContainer.style.left = '0';
-    particlesContainer.style.width = '100%';
-    particlesContainer.style.height = '100%';
-    particlesContainer.style.pointerEvents = 'none';
-    particlesContainer.style.zIndex = '3900';
-    document.body.appendChild(particlesContainer);
-    
-    // 粒子颜色
-    const particleColors = [
-      '#ff6b6b', '#4ecdc4', '#ffe66d', '#ff8364', 
-      '#95e1d3', '#a6b1e1', '#f9c1bb', '#c3aed6'
-    ];
-    
-    // 创建粒子
-    const particleCount = 100;
-    for (let i = 0; i < particleCount; i++) {
-      setTimeout(() => {
-        const particle = document.createElement('div');
-        
-        // 随机大小
-        const size = 5 + Math.random() * 10;
-        
-        // 随机位置
-        const startX = Math.random() * window.innerWidth;
-        const startY = Math.random() * window.innerHeight;
-        
-        // 随机颜色
-        const color = particleColors[Math.floor(Math.random() * particleColors.length)];
-        
-        // 设置粒子样式
-        particle.style.position = 'absolute';
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.backgroundColor = color;
-        particle.style.borderRadius = '50%';
-        particle.style.boxShadow = `0 0 ${size}px ${color}`;
-        particle.style.left = `${startX}px`;
-        particle.style.top = `${startY}px`;
-        particle.style.opacity = '0';
-        
-        // 随机动画持续时间
-        const duration = 3 + Math.random() * 4;
-        
-        // 随机终点
-        const endX = startX + (Math.random() * 200 - 100);
-        const endY = startY + (Math.random() * 200 - 100);
-        
-        // 设置动画
-        particle.style.transition = `all ${duration}s cubic-bezier(0.1, 0.9, 0.2, 1)`;
-        
-        // 添加到容器
-        particlesContainer.appendChild(particle);
-        
-        // 开始动画
-        setTimeout(() => {
-          particle.style.opacity = '0.8';
-          particle.style.transform = `translate(${endX - startX}px, ${endY - startY}px) scale(0.1)`;
-          
-          // 动画结束后移除
-          setTimeout(() => {
-            if (particlesContainer.contains(particle)) {
-              particlesContainer.removeChild(particle);
-            }
-            
-            // 最后一个粒子移除后，移除容器
-            if (i === particleCount - 1) {
-              setTimeout(() => {
-                if (particlesContainer.parentNode) {
-                  particlesContainer.parentNode.removeChild(particlesContainer);
-                }
-              }, duration * 1000);
-            }
-          }, duration * 1000);
-        }, 10);
-      }, i * 30);
-    }
-  }
-
+  // 添加图片加载错误处理
   const imageLoadPromises = imageUrls.map(url => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve({img, url});
       img.onerror = () => {
         console.error(`Failed to load image: ${url}`);
-        reject(`Failed to load image: ${url}`);
+        // 尝试使用相对路径重新加载
+        const retryUrl = `./${url}`;
+        const retryImg = new Image();
+        retryImg.onload = () => resolve({img: retryImg, url: retryUrl});
+        retryImg.onerror = () => {
+          console.error(`Still failed to load image after retry: ${url}`);
+          // 创建一个占位图像，避免整个加载失败
+          const placeholderImg = new Image();
+          placeholderImg.src = 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 300 200%22%3E%3Crect width%3D%22300%22 height%3D%22200%22 fill%3D%22%23cccccc%22%3E%3C%2Frect%3E%3Ctext x%3D%22150%22 y%3D%22100%22 font-size%3D%2220%22 text-anchor%3D%22middle%22 alignment-baseline%3D%22middle%22 fill%3D%22%23666666%22%3E图片加载失败%3C%2Ftext%3E%3C%2Fsvg%3E';
+          resolve({img: placeholderImg, url: url, isPlaceholder: true});
+        };
+        retryImg.src = retryUrl;
       };
       img.src = url;
     });
@@ -1791,4 +1653,210 @@ function createSingleBalloon(container, color) {
       }
     }, 10000 + Math.random() * 3000);
   }, 10);
+}
+
+// 显示最终祝福信息
+function showFinalMessage() {
+  // 创建祝福消息容器
+  const messageContainer = document.createElement('div');
+  messageContainer.style.position = 'fixed';
+  messageContainer.style.top = '50%';
+  messageContainer.style.left = '50%';
+  messageContainer.style.transform = 'translate(-50%, -50%) scale(0.1)';
+  messageContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+  messageContainer.style.padding = '30px 50px';
+  messageContainer.style.borderRadius = '20px';
+  messageContainer.style.boxShadow = '0 10px 40px rgba(255, 105, 180, 0.4)';
+  messageContainer.style.textAlign = 'center';
+  messageContainer.style.zIndex = '4000';
+  messageContainer.style.opacity = '0';
+  messageContainer.style.transition = 'all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  
+  // 创建祝福文字
+  const message = document.createElement('div');
+  message.style.display = 'flex';
+  message.style.flexDirection = 'column';
+  message.style.alignItems = 'center';
+  message.style.justifyContent = 'center';
+  message.style.margin = '0';
+  message.style.padding = '10px 20px';
+  message.style.background = 'rgba(255, 255, 255, 0.2)';
+  message.style.borderRadius = '15px';
+  message.style.boxShadow = '0 8px 25px rgba(255, 105, 180, 0.3)';
+  
+  // 第一行文字
+  const firstLine = document.createElement('h2');
+  firstLine.textContent = '遇见你是我的幸运';
+  firstLine.style.color = '#ff6b8b';
+  firstLine.style.fontSize = '2em';
+  firstLine.style.fontWeight = 'bold';
+  firstLine.style.margin = '0 0 10px 0';
+  firstLine.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+  firstLine.style.background = 'linear-gradient(45deg, #ff6b8b, #ff8e9e)';
+  firstLine.style.webkitBackgroundClip = 'text';
+  firstLine.style.webkitTextFillColor = 'transparent';
+  
+  // 第二行文字
+  const secondLine = document.createElement('h2');
+  secondLine.textContent = '未来我们相片记录幸福到永远';
+  secondLine.style.color = '#7bba8e';
+  secondLine.style.fontSize = '1.8em';
+  secondLine.style.fontWeight = 'bold';
+  secondLine.style.margin = '0';
+  secondLine.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+  secondLine.style.background = 'linear-gradient(45deg,rgb(216, 59, 154),rgb(163, 57, 131))';
+  secondLine.style.webkitBackgroundClip = 'text';
+  secondLine.style.webkitTextFillColor = 'transparent';
+  
+  // 添加到消息容器
+  message.appendChild(firstLine);
+  message.appendChild(secondLine);
+  
+  // 添加装饰元素
+  const leftHeart = document.createElement('span');
+  leftHeart.textContent = '❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️';
+  leftHeart.style.fontSize = '1.5em';
+  leftHeart.style.marginRight = '15px';
+  leftHeart.style.display = 'inline-block';
+  leftHeart.style.animation = 'heartbeat 1.5s infinite';
+  
+  const rightHeart = document.createElement('span');
+  rightHeart.textContent = '❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️';
+  rightHeart.style.fontSize = '1.5em';
+  rightHeart.style.marginLeft = '15px';
+  rightHeart.style.display = 'inline-block';
+  rightHeart.style.animation = 'heartbeat 1.5s infinite';
+  
+  // 创建心跳动画
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = `
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.1); }
+      50% { transform: scale(1); }
+      75% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+  
+  // 组装消息
+  messageContainer.appendChild(leftHeart);
+  messageContainer.appendChild(message);
+  messageContainer.appendChild(rightHeart);
+  document.body.appendChild(messageContainer);
+  
+  // 添加浮动动画
+  message.style.animation = 'float 3s ease-in-out infinite';
+  
+  // 显示消息
+  setTimeout(() => {
+    messageContainer.style.opacity = '1';
+    messageContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+    
+    // 创建彩色粒子效果
+    createCelebrationParticles();
+    
+    // 10秒后淡出消息
+    setTimeout(() => {
+      messageContainer.style.opacity = '0';
+      messageContainer.style.transform = 'translate(-50%, -50%) scale(0.8)';
+      
+      // 移除消息元素
+      setTimeout(() => {
+        if (messageContainer.parentNode) {
+          messageContainer.parentNode.removeChild(messageContainer);
+        }
+      }, 1000);
+    }, 10000);
+  }, 100);
+}
+
+// 创建庆祝粒子效果
+function createCelebrationParticles() {
+  const particlesContainer = document.createElement('div');
+  particlesContainer.style.position = 'fixed';
+  particlesContainer.style.top = '0';
+  particlesContainer.style.left = '0';
+  particlesContainer.style.width = '100%';
+  particlesContainer.style.height = '100%';
+  particlesContainer.style.pointerEvents = 'none';
+  particlesContainer.style.zIndex = '3900';
+  document.body.appendChild(particlesContainer);
+  
+  // 粒子颜色
+  const particleColors = [
+    '#ff6b6b', '#4ecdc4', '#ffe66d', '#ff8364', 
+    '#95e1d3', '#a6b1e1', '#f9c1bb', '#c3aed6'
+  ];
+  
+  // 创建粒子
+  const particleCount = 100;
+  for (let i = 0; i < particleCount; i++) {
+    setTimeout(() => {
+      const particle = document.createElement('div');
+      
+      // 随机大小
+      const size = 5 + Math.random() * 10;
+      
+      // 随机位置
+      const startX = Math.random() * window.innerWidth;
+      const startY = Math.random() * window.innerHeight;
+      
+      // 随机颜色
+      const color = particleColors[Math.floor(Math.random() * particleColors.length)];
+      
+      // 设置粒子样式
+      particle.style.position = 'absolute';
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.backgroundColor = color;
+      particle.style.borderRadius = '50%';
+      particle.style.boxShadow = `0 0 ${size}px ${color}`;
+      particle.style.left = `${startX}px`;
+      particle.style.top = `${startY}px`;
+      particle.style.opacity = '0';
+      
+      // 随机动画持续时间
+      const duration = 3 + Math.random() * 4;
+      
+      // 随机终点
+      const endX = startX + (Math.random() * 200 - 100);
+      const endY = startY + (Math.random() * 200 - 100);
+      
+      // 设置动画
+      particle.style.transition = `all ${duration}s cubic-bezier(0.1, 0.9, 0.2, 1)`;
+      
+      // 添加到容器
+      particlesContainer.appendChild(particle);
+      
+      // 开始动画
+      setTimeout(() => {
+        particle.style.opacity = '0.8';
+        particle.style.transform = `translate(${endX - startX}px, ${endY - startY}px) scale(0.1)`;
+        
+        // 动画结束后移除
+        setTimeout(() => {
+          if (particlesContainer.contains(particle)) {
+            particlesContainer.removeChild(particle);
+          }
+          
+          // 最后一个粒子移除后，移除容器
+          if (i === particleCount - 1) {
+            setTimeout(() => {
+              if (particlesContainer.parentNode) {
+                particlesContainer.parentNode.removeChild(particlesContainer);
+              }
+            }, duration * 1000);
+          }
+        }, duration * 1000);
+      }, 10);
+    }, i * 30);
+  }
 }
